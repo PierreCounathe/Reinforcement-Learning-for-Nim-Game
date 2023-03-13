@@ -1,6 +1,11 @@
 # Reinforcement-Learning-for-Nim-Game
 The Nim game is a mathematical strategy game in which two players take turns removing sticks from distinct heaps. The player removing the last sticks loses. I build a version of the game that can be played in the terminal, and then an Agent class that plays the game. This Agent implements the Q-Learning algorithm. 
 
+<p align="center">
+  <img src="https://i.pinimg.com/originals/8d/db/49/8ddb49378353a8ee860e081a96de8d4e.jpg"
+       alt="Nim Game (Last Year at Marienbad (1961))"/>
+ <p/>
+     
 # Play the game
 1. Clone the repository:
 ```
