@@ -108,7 +108,7 @@ def train_ai(other_args):
         epochs_fails.append(epoch_fail)
 
     sys.stdout.write(
-        f"Training took {round(time.time()-start_time, 2)}s for {int(other_args[1])} epochs."
+        f"Training took {round(time.time()-start_time, 2)}s for {int(other_args[1])} epochs.\n"
     )
     return epochs_rewards, epochs_fails
 
