@@ -5,6 +5,7 @@ The Nim game is a mathematical strategy game in which two players take turns rem
 1. Clone the repository:
 ```
 git clone https://github.com/PierreCounathe/Reinforcement-Learning-for-Nim-Game
+cd Reinforcement-Learning-for-Nim-Game
 ```
 2. Train the Agent and specify its name and number of `training_epochs`:
 ```
