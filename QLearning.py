@@ -11,7 +11,7 @@ from StickGame import Game
 
 class Agent:
     def __init__(
-        self, lr: float = 0.01, gamma: float = 0.95, learning: bool = False
+        self, lr: float = 0.1, gamma: float = 0.9, learning: bool = False
     ) -> None:
         """Initializes an agent who's q-table is filled with zeros. The learning boolean determines
         if the policy is greedy (when learning=False) or epsilon-greedy, and if the q-table should be updated.
@@ -27,10 +27,18 @@ class Agent:
     def epsilon_greedy_policy(self, game: Game, epsilon: float) -> int:
         """Returns a random action with probability epsilon, and the action that maximizes the next state's value
         with probability 1-epsilon."""
+        possible_actions = game.get_possible_actions()
         if np.random.random() <= epsilon:
-            action = np.random.randint(low=0, high=constants.MAX_ACTION_NUMBER + 1)
+            action = np.random.choice(possible_actions)
         else:
-            action = np.argmax(self.q_table[game.get_state_int_encoded()], axis=0)
+            current_state_q_values = self.q_table[game.get_state_int_encoded()]
+            mask = np.ones(current_state_q_values.size, dtype=bool)
+            mask[possible_actions] = False
+            current_state_q_values[mask] = -float("inf")
+            set_of_best_actions = np.argwhere(
+                current_state_q_values == np.amax(current_state_q_values)
+            ).flatten()
+            action = np.random.choice(set_of_best_actions)
         return action
 
     def update_q_value(
@@ -38,17 +46,17 @@ class Agent:
         state_int_encoding: int,
         action: int,
         reward: int,
-        new_state: Optional[int] = None,
+        new_state_int_encoding: Optional[int] = None,
     ) -> None:
         """Updates the q_value of the state-action pair that was just used. When the action taken is forbidden,
         there is no new state to compute the expected discounted next states's reward, it is replaced by 0.
         """
-        if new_state:
+        if new_state_int_encoding:
             self.q_table[state_int_encoding, action] = self.q_table[
                 state_int_encoding, action
             ] + self.lr * (
                 reward
-                + self.gamma * max(self.q_table[new_state])
+                - self.gamma * max(self.q_table[new_state_int_encoding])
                 - self.q_table[state_int_encoding, action]
             )
         else:  # If no new_state is provided (the action is invalid) update without discounted reward of new state
@@ -59,7 +67,7 @@ class Agent:
     def choose_action(self, game: Game) -> Tuple[int, int, int]:
         """Sets epsilon for the epsilon-greedy policy and returns the action, line and sticks Integers."""
         if self.learning:
-            epsilon = 0.4 + self.training_epochs ** (
+            epsilon = 0.1 + (self.training_epochs + 1) ** (
                 -0.8
             )  # decay epsilon with training_epochs
         else:
@@ -84,12 +92,10 @@ class Agent:
             action_fails += 1
             if self.learning:
                 self.update_q_value(state_int_encoding, action, reward)
-                action, line, sticks = self.choose_action(game)
-            else:
-                line = np.random.randint(0, 4)
-                sticks = np.random.randint(1, game.state[line] + 2)
+            action, line, sticks = self.choose_action(game)
         # Now the taken action is valid
         game.play(line, sticks)
+        new_state_int_encoding = game.get_state_int_encoded()
         if sum(game.state) == 1:
             reward = 1
         elif sum(game.state) == 0:
@@ -98,7 +104,9 @@ class Agent:
             reward = 0
         action_reward += reward
         if self.learning:
-            self.update_q_value(state_int_encoding, action, reward)
+            self.update_q_value(
+                state_int_encoding, action, reward, new_state_int_encoding
+            )
         return line, sticks, action_reward, action_fails
 
     def increment_training_epochs(self) -> None:

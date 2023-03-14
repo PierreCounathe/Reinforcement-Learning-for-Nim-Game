@@ -101,8 +101,9 @@ def train_ai(other_args):
         while not game.is_finished():
             _, _, action_reward, action_fails = player.td_learning(game)
             player = next(players_iterator)
-            epoch_reward += action_reward
-            epoch_fail += action_fails
+            if player.learning:
+                epoch_reward += action_reward
+                epoch_fail += action_fails
 
         epochs_rewards.append(epoch_reward)
         epochs_fails.append(epoch_fail)

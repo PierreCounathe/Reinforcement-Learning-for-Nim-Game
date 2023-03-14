@@ -46,6 +46,21 @@ class Game:
             string += str(sticks)
         return int(string)
 
+    def int_encoding_to_state(self, int_encoding: int) -> np.ndarray:
+        """Decodes a state Integer encoding into a game state array."""
+        state = []
+        for char in str(int_encoding):
+            state.append(int(char))
+        return np.array(state)
+
+    def get_possible_actions(self) -> np.ndarray:
+        """Returns an array containing the indices of all possible actions at the current game state."""
+        possible_actions = []
+        for line, sticks in enumerate(self.state):
+            possible_actions_at_line = [line * 10 + s for s in range(1, sticks + 1)]
+            possible_actions += possible_actions_at_line
+        return np.array(possible_actions)
+
     def is_finished(self) -> bool:
         """Returns True if the game is over."""
         return sum(self.state) == 0
