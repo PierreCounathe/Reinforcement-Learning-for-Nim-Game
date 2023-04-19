@@ -13,6 +13,7 @@ git clone https://github.com/PierreCounathe/Reinforcement-Learning-for-Nim-Game
 ```
 ```
 cd Reinforcement-Learning-for-Nim-Game
+pip3 install -r requirements.txt
 ```
 2. Train the Agent and specify its name and number of `training_epochs`:
 ```

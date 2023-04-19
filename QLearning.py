@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import pickle
 from typing import List, Optional, Tuple
 
@@ -7,6 +8,7 @@ import numpy as np
 
 import constants
 from StickGame import Game
+import utils
 
 
 class Agent:
@@ -124,6 +126,7 @@ class Agent:
 
     def save(self, name: str) -> None:
         """Saves the current agent with the name and training_epochs infos."""
+        utils.check_create_folder("cache/")
         filename = f"cache/agent-{name}-{self.training_epochs}-epochs.pkl"
         with open(filename, "wb") as f:
             pickle.dump(self.q_table, f)
