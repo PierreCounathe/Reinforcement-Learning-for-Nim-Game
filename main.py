@@ -2,6 +2,7 @@ import itertools
 import sys
 import time
 
+import argparse
 import numpy as np
 
 import QLearning
@@ -115,15 +116,29 @@ def train_ai(other_args):
 
 
 if __name__ == "__main__":
-    # CLI should be -two-players or -against-ai 'ai_name' training_epochs, or -train 'ai_name' training_epochs
-    args = sys.argv[1:]
-    if args[0] == "-two-players":
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(dest='command')
+
+    # Two players
+    two_players_parser = subparsers.add_parser('two-players')
+    
+    # Against AI
+    against_ai_parser = subparsers.add_parser('against-ai')
+    against_ai_parser.add_argument('ai_name', default='NimGameAI', required=False, help="Name of the AI")
+    against_ai_parser.add_argument('training_epochs', type=int, default=5000, required=False, help="Number of training epochs")
+
+    # Train AI
+    train_ai_parser = subparsers.add_parser('train-ai')
+    train_ai_parser.add_argument('ai_name', required=True, help="Name of the AI")
+    train_ai_parser.add_argument('training_epochs', type=int, required=True, help="Number of training epochs")
+
+    args = parser.parse_args()
+
+    if args.command == 'two-players':
         two_players()
-    elif args[0] == "-against-ai":
-        other_args = args[1:]
-        against_ai(other_args)
-    elif args[0] == "-train-ai":
-        other_args = args[1:]
-        train_ai(other_args)
+    elif args.command == 'against-ai':
+        against_ai(args)
+    elif args.command == 'train-ai':
+        train_ai(args)
     else:
-        sys.stdout.write("Wrong arguments...\n")
+        print("Wrong arguments...")

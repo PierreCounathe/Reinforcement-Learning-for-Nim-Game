@@ -17,11 +17,11 @@ pip3 install -r requirements.txt
 ```
 2. Train the Agent and specify its name and number of `training_epochs`:
 ```
-python3 main.py -train-ai ai_name 5000
+python3 main.py --train-ai ai_name 5000
 ```
 3. Play against another human or against a trained Agent:
 ```
-python3 main.py -two-players
+python3 main.py --two-players
 ```
 ```
-python3 main.py -against-ai ai_name 5000
+python3 main.py --against-ai ai_name 5000
