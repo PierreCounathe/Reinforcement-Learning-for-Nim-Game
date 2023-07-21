@@ -7,6 +7,7 @@ import numpy as np
 
 import QLearning
 import StickGame
+from utils import ask_for_player_input
 
 
 def two_players():
@@ -24,31 +25,36 @@ def two_players():
         game.print_state()
         played = False
         while not played:
-            sys.stdout.write(f"Player {player} it is your turn \n")
-            line_input = int(input("What line do you want to play? -> "))
-            sticks_input = int(input("How many sticks do you want to play? -> "))
+            line_input, sticks_input = ask_for_player_input(player)
             played = game.play(line_input, sticks_input)
         player = next(players_iterator)
     sys.stdout.write(f"Player {player} won!\n")
 
 
-def against_ai(other_args):
+def against_ai(arguments):
     """Launches a game against a trained ai, using its name and its number of training_epochs."""
+    ai_name, training_epochs = arguments
+    training_epochs = int(training_epochs)
+
+    # Initialize ai
+    try:
+        agent = QLearning.Agent(learning=False)
+        agent.load(ai_name, training_epochs)
+    except FileNotFoundError:
+        sys.stdout.write("No cached agent found with these parameters. Please train it first with the following command:\n")
+        sys.stdout.write(f"> python main.py --train-ai  {ai_name} {training_epochs}\n")
+        sys.exit(1)
+
     # Initialize game
     game = StickGame.Game()
 
     # Initialize first player
-    players = ["You", "AI"]
+    players = ["You", ai_name + " (AI)"]
     players_iterator = itertools.cycle(players)
     player = next(players_iterator)
     you_start = input("Do you want to start? [Y/n] -> ")
     if you_start == "n":
         player = next(players_iterator)
-
-    # Initialize ai
-    agent = QLearning.Agent(learning=False)
-    if len(other_args) == 2:
-        agent.load(other_args[0], other_args[1])
 
     # play
     while not game.is_finished():
@@ -56,35 +62,36 @@ def against_ai(other_args):
         played = False
         if player == "You":
             while not played:
-                sys.stdout.write(f"Player {player} it is your turn \n")
-                line_input = int(input("What line do you want to play? -> "))
-                sticks_input = int(input("How many sticks do you want to play? -> "))
+                line_input, sticks_input = ask_for_player_input(player)
                 played = game.play(line_input, sticks_input)
             player = next(players_iterator)
         else:
             line, sticks, _, _ = agent.td_learning(game)
-            sys.stdout.write(f"AI takes {sticks} sticks in line {line}\n")
+            sys.stdout.write(f"\n{ai_name} + (AI) takes {sticks} sticks in line {line}\n\n\n")
             player = next(players_iterator)
     sys.stdout.write(f"{player} won!\n")
 
 
-def train_ai(other_args):
+def train_ai(arguments):
     """Trains an agent for training_epochs epochs and stores it using its name and training_epcochs."""
+    ai_name, training_epochs = arguments
+    training_epochs = int(training_epochs)
+
     epochs_rewards = []
     epochs_fails = []
     start_time = time.time()
-    update_freq = int(other_args[1]) // 10
+    update_freq = training_epochs // 10
 
     # Initialize ai
     learning_agent = QLearning.Agent(learning=True)
     adversarial_agent = QLearning.Agent(learning=False)
-    for epoch in range(int(other_args[1])):
+    for epoch in range(training_epochs):
         epoch_reward = 0
         epoch_fail = 0
         learning_agent.increment_training_epochs()
         if not (epoch + 1) % update_freq:
-            learning_agent.save(other_args[0])
-            sys.stdout.write(f"epoch {epoch+1} out of {int(other_args[1])}\n")
+            learning_agent.save(ai_name)
+            sys.stdout.write(f"epoch {epoch+1} out of {training_epochs}\n")
             adversarial_agent.copy(learning_agent, learning=False)
 
         # Initialize game
@@ -110,35 +117,24 @@ def train_ai(other_args):
         epochs_fails.append(epoch_fail)
 
     sys.stdout.write(
-        f"Training took {round(time.time()-start_time, 2)}s for {int(other_args[1])} epochs.\n"
+        f"Training took {round(time.time()-start_time, 2)}s for {training_epochs} epochs.\n"
     )
     return epochs_rewards, epochs_fails
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers(dest='command')
-
-    # Two players
-    two_players_parser = subparsers.add_parser('two-players')
-    
-    # Against AI
-    against_ai_parser = subparsers.add_parser('against-ai')
-    against_ai_parser.add_argument('ai_name', default='NimGameAI', required=False, help="Name of the AI")
-    against_ai_parser.add_argument('training_epochs', type=int, default=5000, required=False, help="Number of training epochs")
-
-    # Train AI
-    train_ai_parser = subparsers.add_parser('train-ai')
-    train_ai_parser.add_argument('ai_name', required=True, help="Name of the AI")
-    train_ai_parser.add_argument('training_epochs', type=int, required=True, help="Number of training epochs")
+    parser.add_argument('--two-players', action='store_true', help="Launches a two-player game.")
+    parser.add_argument('--train-ai', nargs=2, metavar=("ai_name", "epochs"), help="Trains an agent for training_epochs epochs and stores it using its name and training_epcochs.")
+    parser.add_argument('--against-ai', nargs=2, metavar=("ai_name", "epochs"), help="Launches a game against a trained ai, using its name and its number of training_epochs.")
 
     args = parser.parse_args()
 
-    if args.command == 'two-players':
+    if args.two_players:
         two_players()
-    elif args.command == 'against-ai':
-        against_ai(args)
-    elif args.command == 'train-ai':
-        train_ai(args)
+    elif arguments := args.against_ai:
+        against_ai(arguments)
+    elif arguments := args.train_ai:
+        train_ai(arguments)
     else:
         print("Wrong arguments...")
