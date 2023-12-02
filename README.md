@@ -1,5 +1,5 @@
 # Reinforcement-Learning-for-Nim-Game
-The Nim game is a mathematical strategy game in which two players take turns removing sticks from distinct heaps. The player who removes the last stick loses. As a game in which states are fully observable and with much reduced state and action spaces compared to chess, it is the perfect game to code a Q-Learning RL agent from scratch.
+The [Nim game](https://en.wikipedia.org/wiki/Nim) is a mathematical strategy game in which two players take turns removing sticks from distinct heaps. The player who removes the last stick loses. As a game in which states are fully observable and with much reduced state and action spaces compared to chess, it is the perfect game to code a Q-Learning RL agent from scratch.
 
 <p align="center">
   <img src="https://i.pinimg.com/originals/8d/db/49/8ddb49378353a8ee860e081a96de8d4e.jpg"
